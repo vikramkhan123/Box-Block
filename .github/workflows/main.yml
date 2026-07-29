@@ -13,20 +13,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Extract Zip
+      - name: Extract Zip and Locate Project
         run: |
+          mkdir -p extracted_project
           ZIP_FILE=$(ls *.zip | head -n 1)
           echo "Found zip: $ZIP_FILE"
           unzip -q "$ZIP_FILE" -d extracted_project
-          cd extracted_project
-          PROJECT_DIR=$(ls -d */ | head -n 1)
-          echo "Project directory is: $PROJECT_DIR"
-          echo "PROJECT_PATH=extracted_project/$PROJECT_DIR" >> $GITHUB_ENV
+          
+          # Find the directory containing gradlew
+          PROJECT_ROOT=$(find extracted_project -name "gradlew" -exec dirname {} \; | head -n 1)
+          echo "Found project root at: $PROJECT_ROOT"
+          echo "PROJECT_PATH=$PROJECT_ROOT" >> $GITHUB_ENV
 
       - name: Build Debug APK
         run: |
